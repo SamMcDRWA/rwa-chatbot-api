@@ -995,7 +995,7 @@ async def delete_news_article(article_id: int):
         cursor = conn.cursor()
         
         # Delete the article
-        cursor.execute("DELETE FROM news_articles WHERE id = %s", (article_id,))
+        cursor.execute("DELETE FROM chatbot.news_articles WHERE id = %s", (article_id,))
         conn.commit()
         
         cursor.close()
@@ -1020,7 +1020,7 @@ async def cleanup_test_articles():
         
         # Delete test articles (those with "test" in title or source)
         cursor.execute("""
-            DELETE FROM news_articles 
+            DELETE FROM chatbot.news_articles 
             WHERE LOWER(title) LIKE '%test%' 
             OR LOWER(source) LIKE '%test%'
             OR LOWER(title) LIKE '%n8n%'
