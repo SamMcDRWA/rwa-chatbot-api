@@ -870,16 +870,38 @@ async def news_webhook_endpoint(request: Dict[str, Any]):
     try:
         logger.info("News webhook called")
         
-        # Extract article data from request
-        article_data = request.get("article", {})
-        if not article_data:
-            raise HTTPException(status_code=400, detail="No article data provided")
+        # Check if this is a batch of articles (array) or single article
+        if "articles" in request:
+            # Batch processing - clear all existing articles first
+            logger.info("Batch processing detected - clearing existing articles")
+            conn = get_db_connection()
+            cursor = conn.cursor()
+            cursor.execute("DELETE FROM chatbot.news_articles")
+            conn.commit()
+            cursor.close()
+            conn.close()
+            logger.info("Cleared all existing articles")
+            
+            # Process each article in the batch
+            article_ids = []
+            for article_data in request["articles"]:
+                article_id = store_news_article(article_data)
+                article_ids.append(article_id)
+            
+            logger.info(f"Stored {len(article_ids)} news articles with IDs: {article_ids}")
+            return {"status": "success", "article_ids": article_ids, "message": f"Stored {len(article_ids)} articles successfully"}
         
-        # Store article in database
-        article_id = store_news_article(article_data)
-        
-        logger.info(f"Stored news article with ID: {article_id}")
-        return {"status": "success", "article_id": article_id, "message": "Article stored successfully"}
+        else:
+            # Single article processing (legacy support)
+            article_data = request.get("article", {})
+            if not article_data:
+                raise HTTPException(status_code=400, detail="No article data provided")
+            
+            # Store article in database
+            article_id = store_news_article(article_data)
+            
+            logger.info(f"Stored news article with ID: {article_id}")
+            return {"status": "success", "article_id": article_id, "message": "Article stored successfully"}
         
     except Exception as e:
         logger.error(f"Error storing news article: {e}")
