@@ -1039,6 +1039,32 @@ async def cleanup_test_articles():
         logger.error(f"Error cleaning up test articles: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
+@app.delete("/news/clear")
+async def clear_all_articles():
+    """Delete all news articles"""
+    try:
+        logger.info("Clearing all news articles")
+        
+        # Connect to database
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        # Delete all articles
+        cursor.execute("DELETE FROM chatbot.news_articles")
+        
+        deleted_count = cursor.rowcount
+        conn.commit()
+        
+        cursor.close()
+        conn.close()
+        
+        logger.info(f"Cleared {deleted_count} articles")
+        return {"status": "success", "message": f"Cleared {deleted_count} articles"}
+        
+    except Exception as e:
+        logger.error(f"Error clearing articles: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 if __name__ == "__main__":
     import uvicorn
     print("🚀 Starting RWA Adele Enhanced Chat API...")
