@@ -1,0 +1,22 @@
+# RWA Adele Environment Configuration
+# Copy this file to .env and fill in your actual values
+
+# Tableau Server Configuration
+TABLEAU_SERVER_URL=https://your-tableau-server.com
+TABLEAU_USERNAME=your-username
+TABLEAU_PASSWORD=your-password
+TABLEAU_SITE_ID=your-site-id
+
+# Database Configuration
+DB_HOST=your-database-host
+DB_PORT=5432
+DB_NAME=your-database-name
+DB_USER=your-database-username
+DB_PASSWORD=your-database-password
+
+# Optional: OpenAI API Key (for advanced features)
+OPENAI_API_KEY=your-openai-api-key
+
+# Optional: Supabase Configuration (if using Supabase)
+SUPABASE_URL=your-supabase-url
+SUPABASE_KEY=your-supabase-key

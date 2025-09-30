@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RWA Adele - Your Personal Intelligence Assistant</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <div class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h2><i class="fas fa-chart-bar"></i> Tableau Content</h2>
+                <div class="api-status">
+                    <span class="status-dot" id="apiStatus"></span>
+                    <span id="apiStatusText">Checking...</span>
+                </div>
+            </div>
+            
+            
+            <div class="sidebar-section">
+                <h3><i class="fas fa-star"></i> Favorites</h3>
+                <div id="favoritesList" class="favorites-list">
+                    <p class="empty-state">No favorites yet. Click the star on any workbook to add it here!</p>
+                </div>
+            </div>
+            
+            <div class="sidebar-section">
+                <h3><i class="fas fa-folder"></i> Projects</h3>
+                <div id="projectsList" class="projects-list">
+                    <p class="loading">Loading projects...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Resize Handle -->
+        <div class="resize-handle" id="resizeHandle" title="Drag to resize sidebar (double-click to reset)"></div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Container 1: Header -->
+            <div class="container-1">
+                <div class="logo-container">
+                    <img src="RWA Pharmacy Logo Landscape Negative (cmyk).png" alt="RWA Pharmacy Logo" class="logo">
+                </div>
+                <div class="header-content">
+                    <h1 class="header-title">🤖 RWA Adele</h1>
+                    <p class="header-tagline">Your personal intelligence assistant for finding RWA Reports</p>
+                </div>
+                <div class="header-spacer"></div>
+            </div>
+
+            <!-- Container 2: Chat Messages -->
+            <div class="container-2" id="chatContainer">
+                <div class="welcome-message" id="welcomeMessage">
+                    <div class="welcome-content">
+                        <h3>💬 Start a conversation</h3>
+                        <p>Ask RWA Adele anything about your pharmacy needs...</p>
+                    </div>
+                </div>
+                <div class="messages" id="messagesContainer"></div>
+            </div>
+
+            <!-- Container 3: Chat Input -->
+            <div class="container-3">
+                <div class="chat-input-container">
+                    <form id="chatForm" class="chat-form">
+                        <div class="input-group">
+                            <input 
+                                type="text" 
+                                id="chatInput" 
+                                placeholder="Ask RWA Adele anything about your pharmacy needs..."
+                                autocomplete="off"
+                            >
+                            <button type="submit" class="send-button">
+                                <i class="fas fa-paper-plane"></i>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+                
+                <div class="quick-actions">
+                    <h3><i class="fas fa-rocket"></i> Quick Actions</h3>
+                    <div class="action-buttons">
+                        <button class="action-btn" data-action="dashboards">
+                            <i class="fas fa-chart-bar"></i>
+                            Show All Dashboards
+                        </button>
+                        <button class="action-btn" data-action="sales">
+                            <i class="fas fa-file-alt"></i>
+                            Find Sales Data
+                        </button>
+                        <button class="action-btn" data-action="clear">
+                            <i class="fas fa-trash"></i>
+                            Clear Chat
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- News Resize Handle -->
+        <div class="news-resize-handle" id="newsResizeHandle" title="Drag to resize news sidebar (double-click to reset)"></div>
+
+        <!-- News Sidebar -->
+        <div class="news-sidebar" id="newsSidebar">
+            <div class="news-header">
+                <h3><i class="fas fa-newspaper"></i> Latest News</h3>
+                <button class="news-toggle" id="newsToggle" title="Toggle news sidebar">
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+            </div>
+            <div class="news-content" id="newsContent">
+                <div class="news-loading">
+                    <p>Loading latest news...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js?v=14"></script>
+</body>
+</html>
