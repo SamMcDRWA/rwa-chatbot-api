@@ -188,9 +188,13 @@ class RWAAgent:
                     try:
                         desc_data = json.loads(desc)
                         if isinstance(desc_data, dict) and desc_data.get('detailed_description'):
-                            response += f"   {desc_data['detailed_description'][:100]}...\n"
+                            # Clean the markdown formatting
+                            cleaned_desc = self._clean_markdown_formatting(desc_data['detailed_description'])
+                            response += f"   {cleaned_desc[:100]}...\n"
                     except:
-                        response += f"   {desc[:100]}...\n"
+                        # Clean the description if it's a string
+                        cleaned_desc = self._clean_markdown_formatting(desc)
+                        response += f"   {cleaned_desc[:100]}...\n"
                 response += f"   Relevance: {score:.1%}\n\n"
             
             cursor.close()
@@ -200,6 +204,26 @@ class RWAAgent:
         except Exception as e:
             return f"Error searching modules: {str(e)}"
     
+    def _clean_markdown_formatting(self, text: str) -> str:
+        """Clean markdown formatting to use proper formatting"""
+        if not text:
+            return text
+        
+        # Replace ### headers with **bold** formatting
+        text = text.replace('### Purpose', '**Purpose:**')
+        text = text.replace('### Key Metrics', '**Key Metrics:**')
+        text = text.replace('### How to Use', '**How to Use:**')
+        text = text.replace('### Target Audience', '**Target Audience:**')
+        text = text.replace('### Usage Notes', '**Usage Notes:**')
+        text = text.replace('### Features', '**Features:**')
+        text = text.replace('### Benefits', '**Benefits:**')
+        
+        # Replace any remaining ### with **
+        import re
+        text = re.sub(r'###\s*([^#\n]+)', r'**\1:**', text)
+        
+        return text
+
     def _get_module_details(self, module_identifier: str) -> str:
         """Get detailed information about a specific module"""
         try:
@@ -247,7 +271,9 @@ class RWAAgent:
                     desc_data = json.loads(description)
                     if isinstance(desc_data, dict):
                         if desc_data.get('detailed_description'):
-                            response += f"{desc_data['detailed_description']}\n\n"
+                            # Clean the markdown formatting
+                            cleaned_desc = self._clean_markdown_formatting(desc_data['detailed_description'])
+                            response += f"{cleaned_desc}\n\n"
                         
                         if desc_data.get('purpose'):
                             response += f"**Purpose:**\n{desc_data['purpose']}\n\n"
@@ -266,7 +292,9 @@ class RWAAgent:
                         if desc_data.get('target_audience'):
                             response += f"**Target Audience:**\n{desc_data['target_audience']}\n\n"
                     else:
-                        response += f"{description}\n\n"
+                        # Clean the description if it's a string
+                        cleaned_desc = self._clean_markdown_formatting(description)
+                        response += f"{cleaned_desc}\n\n"
                 except:
                     response += f"{description}\n\n"
             else:
@@ -347,9 +375,13 @@ class RWAAgent:
                     try:
                         desc_data = json.loads(desc)
                         if isinstance(desc_data, dict) and desc_data.get('detailed_description'):
-                            response += f"  {desc_data['detailed_description'][:80]}...\n"
+                            # Clean the markdown formatting
+                            cleaned_desc = self._clean_markdown_formatting(desc_data['detailed_description'])
+                            response += f"  {cleaned_desc[:80]}...\n"
                     except:
-                        response += f"  {desc[:80]}...\n"
+                        # Clean the description if it's a string
+                        cleaned_desc = self._clean_markdown_formatting(desc)
+                        response += f"  {cleaned_desc[:80]}...\n"
                 response += "\n"
             
             cursor.close()
