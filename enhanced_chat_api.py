@@ -991,7 +991,7 @@ async def delete_news_article(article_id: int):
         logger.info(f"Deleting news article with ID: {article_id}")
         
         # Connect to database
-        conn = psycopg2.connect(os.getenv('DATABASE_URL'))
+        conn = get_database_connection()
         cursor = conn.cursor()
         
         # Delete the article
@@ -1015,7 +1015,7 @@ async def cleanup_test_articles():
         logger.info("Cleaning up test articles")
         
         # Connect to database
-        conn = psycopg2.connect(os.getenv('DATABASE_URL'))
+        conn = get_database_connection()
         cursor = conn.cursor()
         
         # Delete test articles (those with "test" in title or source)
