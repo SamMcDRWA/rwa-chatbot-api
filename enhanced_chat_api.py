@@ -984,6 +984,61 @@ async def chat_endpoint(request: Dict[str, Any]):
         logger.error(f"Chat error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
+@app.delete("/news/{article_id}")
+async def delete_news_article(article_id: int):
+    """Delete a news article by ID"""
+    try:
+        logger.info(f"Deleting news article with ID: {article_id}")
+        
+        # Connect to database
+        conn = psycopg2.connect(database_url)
+        cursor = conn.cursor()
+        
+        # Delete the article
+        cursor.execute("DELETE FROM news_articles WHERE id = %s", (article_id,))
+        conn.commit()
+        
+        cursor.close()
+        conn.close()
+        
+        logger.info(f"Successfully deleted news article with ID: {article_id}")
+        return {"status": "success", "message": f"Article {article_id} deleted successfully"}
+        
+    except Exception as e:
+        logger.error(f"Error deleting news article: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.delete("/news/cleanup/test")
+async def cleanup_test_articles():
+    """Delete all test articles"""
+    try:
+        logger.info("Cleaning up test articles")
+        
+        # Connect to database
+        conn = psycopg2.connect(database_url)
+        cursor = conn.cursor()
+        
+        # Delete test articles (those with "test" in title or source)
+        cursor.execute("""
+            DELETE FROM news_articles 
+            WHERE LOWER(title) LIKE '%test%' 
+            OR LOWER(source) LIKE '%test%'
+            OR LOWER(title) LIKE '%n8n%'
+        """)
+        
+        deleted_count = cursor.rowcount
+        conn.commit()
+        
+        cursor.close()
+        conn.close()
+        
+        logger.info(f"Cleaned up {deleted_count} test articles")
+        return {"status": "success", "message": f"Cleaned up {deleted_count} test articles"}
+        
+    except Exception as e:
+        logger.error(f"Error cleaning up test articles: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 if __name__ == "__main__":
     import uvicorn
     print("🚀 Starting RWA Adele Enhanced Chat API...")
