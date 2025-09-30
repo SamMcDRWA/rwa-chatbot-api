@@ -1,1 +1,1 @@
-web: python enhanced_chat_api.py
+web: uvicorn enhanced_chat_api:app --host 0.0.0.0 --port $PORT
