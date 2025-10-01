@@ -182,7 +182,11 @@ class RWAAgent:
             
             response = f"Found {len(results)} module(s) matching '{query}':\n\n"
             for i, (obj_type, title, desc, project, url, text_blob, score) in enumerate(results, 1):
-                response += f"{i}. **{title}** ({project})\n"
+                # Format title as clickable link if URL exists
+                if url:
+                    response += f"{i}. **[{title}]({url})** ({project})\n"
+                else:
+                    response += f"{i}. **{title}** ({project})\n"
                 if desc and len(desc) > 50:
                     # Try to parse JSON description
                     try:
@@ -223,6 +227,54 @@ class RWAAgent:
         text = re.sub(r'###\s*([^#\n]+)', r'**\1:**', text)
         
         return text
+    
+    def _add_module_links(self, text: str) -> str:
+        """Add clickable links to module names mentioned in text"""
+        if not text:
+            return text
+        
+        try:
+            import re
+            import logging
+            
+            logger = logging.getLogger(__name__)
+            logger.info(f"_add_module_links called with text length: {len(text)}")
+            
+            conn = self._get_db_connection()
+            cursor = conn.cursor()
+            
+            # Get all modules with their URLs
+            cursor.execute("""
+                SELECT title, url
+                FROM chatbot.objects 
+                WHERE object_type = 'workbook' AND url IS NOT NULL AND url != ''
+                ORDER BY LENGTH(title) DESC
+            """)
+            
+            modules = cursor.fetchall()
+            logger.info(f"Found {len(modules)} modules with URLs")
+            
+            cursor.close()
+            conn.close()
+            
+            # Use simpler, more reliable pattern
+            for title, url in modules:
+                if title and url:
+                    # Simple exact match (case insensitive)
+                    if title.lower() in text.lower():
+                        # Find the exact occurrence with proper case
+                        pattern = re.escape(title)
+                        replacement = f'[{title}]({url})'
+                        text = re.sub(pattern, replacement, text, flags=re.IGNORECASE, count=1)
+                        logger.info(f"Replaced '{title}' with link")
+            
+            return text
+            
+        except Exception as e:
+            # If link addition fails, just return original text
+            import logging
+            logging.error(f"Error adding module links: {e}")
+            return text
 
     def _get_module_details(self, module_identifier: str) -> str:
         """Get detailed information about a specific module"""
@@ -262,7 +314,11 @@ class RWAAgent:
             
             obj_type, title, description, project_name, url, text_blob = result
             
-            response = f"**{title}**\n"
+            # Format title as clickable link if URL exists
+            if url:
+                response = f"**[{title}]({url})**\n"
+            else:
+                response = f"**{title}**\n"
             response += f"*({project_name})*\n\n"
             
             # Try to parse rich description
@@ -342,7 +398,7 @@ class RWAAgent:
             
             if project:
                 query = """
-                SELECT title, project_name, description
+                SELECT title, project_name, description, url
                 FROM chatbot.objects 
                 WHERE object_type = 'workbook' AND project_name ILIKE %s
                 ORDER BY project_name, title
@@ -350,7 +406,7 @@ class RWAAgent:
                 cursor.execute(query, [f"%{project}%"])
             else:
                 query = """
-                SELECT title, project_name, description
+                SELECT title, project_name, description, url
                 FROM chatbot.objects 
                 WHERE object_type = 'workbook'
                 ORDER BY project_name, title
@@ -365,12 +421,16 @@ class RWAAgent:
             response = f"Found {len(results)} module(s):\n\n"
             current_project = None
             
-            for title, proj_name, desc in results:
+            for title, proj_name, desc, url in results:
                 if proj_name != current_project:
                     response += f"**{proj_name}**\n"
                     current_project = proj_name
                 
-                response += f"• {title}\n"
+                # Format as clickable link if URL exists
+                if url:
+                    response += f"• [{title}]({url})\n"
+                else:
+                    response += f"• {title}\n"
                 if desc and len(desc) > 50:
                     try:
                         desc_data = json.loads(desc)
@@ -451,13 +511,19 @@ Be conversational, helpful, and focus on pharmacy-related topics. Use the databa
             # Get response from ChatGPT
             response = self.llm.invoke(messages)
             
+            # Clean markdown formatting from the response
+            cleaned_response = self._clean_markdown_formatting(response.content)
+            
+            # Add clickable links to module names
+            linked_response = self._add_module_links(cleaned_response)
+            
             # Update conversation history with new messages
             updated_history = (conversation_history or []).copy()
             updated_history.append({"role": "user", "content": message})
-            updated_history.append({"role": "assistant", "content": response.content})
+            updated_history.append({"role": "assistant", "content": linked_response})
             
             return {
-                "response": response.content,
+                "response": linked_response,
                 "conversation_history": updated_history,
                 "agent_used": True
             }
@@ -510,10 +576,20 @@ Be conversational, helpful, and focus on pharmacy-related topics. Use the databa
                         recent_modules.extend(module_nums)
                 
                 # If user is asking about "this module" or similar, use the most recent module
-                if any(phrase in message.lower() for phrase in ["this module", "it", "that module", "what does this do", "tell me more about it", "more details", "details"]):
-                    if recent_modules:
-                        module_num = recent_modules[-1]  # Most recent module
-                        return self._get_module_details(module_num)
+                # Also detect questions about specific aspects like "key metrics", "what about", etc.
+                context_phrases = [
+                    "this module", "it", "that module", "what does this do", "tell me more about it", 
+                    "more details", "details", "key metrics", "what about", "tell me about", 
+                    "explain", "what are the", "what is the", "how about", "show me", "describe"
+                ]
+                
+                # Check if the query is asking about the module in context (without mentioning a specific module number)
+                is_context_query = any(phrase in message.lower() for phrase in context_phrases)
+                has_no_specific_module = not re.findall(r'(\d+\.\d+)', message)
+                
+                if is_context_query and has_no_specific_module and recent_modules:
+                    module_num = recent_modules[-1]  # Most recent module
+                    return self._get_module_details(module_num)
             
             # Check for NMS specifically
             if "nms" in message.lower():
