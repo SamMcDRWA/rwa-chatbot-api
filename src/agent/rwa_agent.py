@@ -260,9 +260,15 @@ class RWAAgent:
             # Use simpler, more reliable pattern
             for title, url in modules:
                 if title and url:
-                    # Simple exact match (case insensitive)
+                    # Check if title exists in text (case insensitive)
                     if title.lower() in text.lower():
-                        # Find the exact occurrence with proper case
+                        # Don't replace if it's already part of a markdown link
+                        # Check if the title is already wrapped in []() syntax
+                        if f'[{title}](' in text or f'[{title.lower()}](' in text.lower():
+                            logger.info(f"Skipping '{title}' - already a link")
+                            continue
+                        
+                        # Find the exact occurrence with proper case and replace
                         pattern = re.escape(title)
                         replacement = f'[{title}]({url})'
                         text = re.sub(pattern, replacement, text, flags=re.IGNORECASE, count=1)

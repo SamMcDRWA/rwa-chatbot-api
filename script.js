@@ -696,20 +696,34 @@ class RWAChatbot {
         // Convert markdown-like formatting to HTML
         let formatted = content;
         
-        // First, convert markdown links to HTML links
-        // Use lookbehind to find the matching closing paren
-        formatted = formatted.replace(/\[([^\]]+)\]\((https?:\/\/[^)]*\)(?!\)))/g, (match, text, url) => {
-            // Remove the trailing ) from url if present
-            url = url.replace(/\)$/, '');
+        // Debug logging
+        console.log('=== formatMessage Debug ===');
+        console.log('Original:', content);
+        
+        // Handle bold links: **[text](url)**
+        formatted = formatted.replace(/\*\*\[([^\]]+)\]\(((?:(?!\)\*\*).)+)\)\*\*/g, (match, text, url) => {
+            console.log('Bold link matched:', {match, text, url});
+            return `<strong><a href="${url}" target="_blank" rel="noopener noreferrer">${text}</a></strong>`;
+        });
+        
+        console.log('After bold links:', formatted);
+        
+        // Then, convert regular markdown links: [text](url)
+        formatted = formatted.replace(/\[([^\]]+)\]\(((?:(?!\)\*\*).)+?)\)(?!\*\*)/g, (match, text, url) => {
+            console.log('Regular link matched:', {match, text, url});
             return `<a href="${url}" target="_blank" rel="noopener noreferrer">${text}</a>`;
         });
         
-        // Then convert bold and italic
+        console.log('After regular links:', formatted);
+        
+        // Then convert remaining bold and italic
         formatted = formatted.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
         formatted = formatted.replace(/\*(.*?)\*/g, '<em>$1</em>');
         
         // Finally convert newlines
         formatted = formatted.replace(/\n/g, '<br>');
+        
+        console.log('Final formatted:', formatted);
         
         return formatted;
     }
