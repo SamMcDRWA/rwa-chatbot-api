@@ -4,7 +4,7 @@ console.log('DOM loaded, initializing chatbot...');
 
 class RWAChatbot {
     constructor() {
-        this.apiBaseUrl = 'http://localhost:8000';
+        this.apiBaseUrl = 'https://rwa-chatbot-a096633b7583.herokuapp.com';
         this.messages = [];
         this.conversationHistory = [];
         this.favorites = [];
@@ -694,11 +694,24 @@ class RWAChatbot {
 
     formatMessage(content) {
         // Convert markdown-like formatting to HTML
-        return content
-            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-            .replace(/\*(.*?)\*/g, '<em>$1</em>')
-            .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank">$1</a>')
-            .replace(/\n/g, '<br>');
+        let formatted = content;
+        
+        // First, convert markdown links to HTML links
+        // Use lookbehind to find the matching closing paren
+        formatted = formatted.replace(/\[([^\]]+)\]\((https?:\/\/[^)]*\)(?!\)))/g, (match, text, url) => {
+            // Remove the trailing ) from url if present
+            url = url.replace(/\)$/, '');
+            return `<a href="${url}" target="_blank" rel="noopener noreferrer">${text}</a>`;
+        });
+        
+        // Then convert bold and italic
+        formatted = formatted.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+        formatted = formatted.replace(/\*(.*?)\*/g, '<em>$1</em>');
+        
+        // Finally convert newlines
+        formatted = formatted.replace(/\n/g, '<br>');
+        
+        return formatted;
     }
 
     showTypingIndicator() {

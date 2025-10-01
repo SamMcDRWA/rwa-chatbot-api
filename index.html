@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>RWA Adele - Your Personal Intelligence Assistant</title>
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="styles.css?v=2">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 </head>
 <body>
@@ -120,6 +120,16 @@
         </div>
     </div>
 
-    <script src="script.js?v=14"></script>
+    <script src="script.js?v=22"></script>
+    <script>
+        // Force news sidebar background color
+        document.addEventListener('DOMContentLoaded', function() {
+            const newsSidebar = document.getElementById('newsSidebar');
+            if (newsSidebar) {
+                newsSidebar.style.backgroundColor = '#2c3e50';
+                newsSidebar.style.color = 'white';
+            }
+        });
+    </script>
 </body>
 </html>
